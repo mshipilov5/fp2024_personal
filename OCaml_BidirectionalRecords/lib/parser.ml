@@ -111,18 +111,17 @@ let ppattern =
 
 let plet pexpr =
   let rec pbody pexpr =
-    ppattern >>= fun id -> pbody pexpr <|> pstoken "=" *> pexpr >>| fun e -> Efun ([id], e)
+    ppattern >>= function
+    | PVar id -> pbody pexpr <|> (pstoken "=" *> pexpr >>| fun e -> Efun ([id], e))
+    | _ -> failwith "Only variable patterns are supported"
   in
   pstoken "let"
   *> lift4
-       (fun is_rec id e1 e2 -> 
-          match is_rec with
-          | Rec -> Elet_rec (id, e1, e2)
-          | NonRec -> Elet (id, e1, e2))
+       (fun r id e1 e2 -> Elet (r, id, e1, e2))
        (pstoken "rec" *> return Rec <|> return NonRec)
        (pparens varname <|> varname)
        (pstoken "=" *> pexpr <|> pbody pexpr)
-;;
+       (pstoken "in" *> pexpr <|> return (Econst Unit))
 
 
 let pexpr =

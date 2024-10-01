@@ -1,3 +1,8 @@
+(** Copyright 2021-2024, mshipilov5 *)
+
+(** SPDX-License-Identifier: LGPL-3.0-or-later *)
+
+
 type const = Int of int | String of string | Bool of bool | Unit
 (* language constants of type int, string, bool, and unit respectively *)
 
@@ -21,12 +26,15 @@ type un_op = Negative | Not
 type id = string
 (* maybe will add a position later, like string * pos, now used for clarity *)
 
+type rec_flag = Rec | NonRec
+
 
 type pattern =
   | PVar of id
   | PConst of const
+  | PAny (* _ *)
 
-  
+
 type expr =
   | Econst of const (* constants, e.g. 10, "meow", true *)
   | Evar of id (* identifiers, e.g. "x", "f"*)
@@ -38,9 +46,8 @@ type expr =
   | Elist of expr list (* expressions [E0; ..; En], n >= 0 *)
   | Ebin_op of bin_op * expr * expr (* E0 bin_op E1, e.g. 1 + 3 *)
   | Eun_op of un_op * expr (* E0 un_op E1, e.g. Negative 2, Not true *)
-  | Elet of id * expr * expr
+  | Elet of rec_flag * id * expr * expr
   (* let P1 = E1 and P2 = E2 and ... and Pn = En in E, e.g. let x = 5 *)
-  | Elet_rec of id * expr * expr
   (* let rec P1 = E1 and P2 = E2 and ... and Pn = En in E *)
   | Efun_application of expr * expr (* E0 E1, e.g. f x *)
   | Efun of id list * expr
@@ -49,3 +56,4 @@ type expr =
 
 and value_binding = { name : id; value_expr : expr; body_expr : expr }
 (* name bound to value, value, body there this "variable" is bound *)
+
